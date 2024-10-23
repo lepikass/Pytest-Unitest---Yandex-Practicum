@@ -1,6 +1,6 @@
 import pytest
 from django.urls import reverse
-from news.models import News, Comment
+from news.models import News
 
 
 @pytest.mark.django_db

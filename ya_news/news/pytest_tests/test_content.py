@@ -83,7 +83,6 @@ def test_authenticated_user_can_access_comment_form(client):
     Проверяет, что авторизованные пользователи могут видеть
     форму для комментариев на странице новости.
     """
-    user = User.objects.create_user(username='testuser', password='password')
     news = News.objects.create(title='Test News', date='2024-10-23')
     client.login(username='testuser', password='password')
     url = reverse('news:detail', args=[news.pk])

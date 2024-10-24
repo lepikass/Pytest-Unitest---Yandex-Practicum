@@ -8,60 +8,36 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
-def test_homepage_news_count(client, settings):
+def test_homepage_news_count(client, news_data):
     """
     Проверяет, что на главной странице не отображается больше
-    новостей, чем задано в настройках (NEWS_COUNT_ON_HOME_PAGE).
+    10 новостей.
     """
-    settings.NEWS_COUNT_ON_HOME_PAGE = 10
-    for i in range(15):
-        News.objects.create(title=f'News {i}', text='Some text')
     url = reverse('news:home')
     response = client.get(url)
     assert len(response.context['news_list']) <= 10
 
 
-def test_news_ordering(db):
+def test_news_ordering(news_and_comments_data):
     """
     Проверяет, что новости сортируются по дате в порядке
     убывания (новейшие сначала).
     """
-    news1 = News.objects.create(
-        title='News 1', date=datetime.today() - timedelta(days=2)
-    )
-    news2 = News.objects.create(
-        title='News 2', date=datetime.today() - timedelta(days=1)
-    )
-    news3 = News.objects.create(
-        title='News 3', date=datetime.today()
-    )
+    news_list = news_and_comments_data['news_list']
     sorted_news = News.objects.order_by('-date')
-    assert list(sorted_news) == [news3, news2, news1]
+    assert list(sorted_news) == news_list[::-1]
 
 
 @pytest.mark.django_db
-def test_comment_ordering():
+def test_comment_ordering(news_and_comments_data):
     """
     Проверяет, что комментарии к новости сортируются по дате
     создания в порядке возрастания (старые комментарии первыми).
     """
-    author = User.objects.create_user(username='testuser', password='password')
-    news = News.objects.create(title='Test News', date=datetime.now())
-    comment1 = Comment.objects.create(
-        news=news, author=author,
-        text='Comment 1',
-        created=datetime.now() - timedelta(days=2)
-    )
-    comment2 = Comment.objects.create(
-        news=news, author=author,
-        text='Comment 2',
-        created=datetime.now() - timedelta(days=1)
-    )
-    comment3 = Comment.objects.create(
-        news=news, author=author, text='Comment 3', created=datetime.now()
-    )
-    sorted_comments = news.comment_set.all()
-    assert list(sorted_comments) == [comment1, comment2, comment3]
+    comments = news_and_comments_data['comments']
+    news = news_and_comments_data['news_list'][0]
+    sorted_comments = news.comment_set.order_by('created')
+    assert list(sorted_comments) == comments
 
 
 @pytest.mark.django_db

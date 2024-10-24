@@ -46,9 +46,7 @@ def comment(db, author_user, news):
 
 @pytest.fixture
 def news_data(db):
-    """
-    Создаёт 15 записей новостей для использования в тестах.
-    """
+    """Создаёт 15 записей новостей для использования в тестах."""
     for i in range(15):
         News.objects.create(title=f'News {i}', text='Some text')
 
@@ -56,7 +54,8 @@ def news_data(db):
 @pytest.fixture
 def news_and_comments_data(db):
     """
-    Создаёт 3 новости с различными датами и 3 комментария для каждой новости.
+    Создаёт 3 новости с различными датами и 3 комментария
+    для каждой новости.
     """
     news1 = News.objects.create(
         title='News 1', date=datetime.today() - timedelta(days=2)

@@ -1,7 +1,6 @@
 import pytest
 from django.urls import reverse
-from news.models import News, Comment
-from datetime import datetime, timedelta
+from news.models import News
 from django.contrib.auth import get_user_model
 
 User = get_user_model()

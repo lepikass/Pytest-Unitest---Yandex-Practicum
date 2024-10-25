@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from notes.models import Note
@@ -36,15 +36,19 @@ class NotesTests(TestCase):
         )
 
     def setUp(self):
-        """Логин пользователя для тестов."""
-        self.client.login(username='user1', password='pass1')
+        """Создаёт клиентов и логин для тестов с двумя пользователями."""
+        self.client_user1 = Client()
+        self.client_user1.login(username='user1', password='pass1')
+
+        self.client_user2 = Client()
+        self.client_user2.login(username='user2', password='pass2')
 
     def test_update_note_form_in_context(self):
         """
         Проверяет, что на странице редактирования заметки передаётся форма
         для авторизованного пользователя.
         """
-        response = self.client.get(
+        response = self.client_user1.get(
             reverse('notes:edit', args=[self.note1.slug])
         )
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -56,10 +60,7 @@ class NotesTests(TestCase):
         Проверяет, что другой пользователь не может
         редактировать чужую заметку.
         """
-        # Логин другого пользователя для проверки доступа к чужой заметке
-        self.client.logout()
-        self.client.login(username='user2', password='pass2')
-        response = self.client.get(
+        response = self.client_user2.get(
             reverse('notes:edit', args=[self.note1.slug])
         )
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)

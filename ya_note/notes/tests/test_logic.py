@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from notes.models import Note
@@ -17,12 +17,14 @@ class NoteLogicTests(TestCase):
         )
 
     def setUp(self):
-        """Авторизует тестового пользователя перед каждым тестом."""
-        self.client.login(username='user1', password='pass1')
+        """Создаёт клиентов для авторизованного и анонимного пользователя."""
+        self.authenticated_client = Client()
+        self.authenticated_client.login(username='user1', password='pass1')
+        self.anonymous_client = Client()
 
     def test_authenticated_user_can_create_note(self):
         """Проверяет, что авторизованный пользователь может создать заметку."""
-        response = self.client.post(reverse('notes:add'), {
+        response = self.authenticated_client.post(reverse('notes:add'), {
             'title': 'New Note',
             'text': 'This is a new note',
         })
@@ -33,8 +35,7 @@ class NoteLogicTests(TestCase):
 
     def test_anonymous_user_cannot_create_note(self):
         """Проверяет, что анонимный пользователь не может создать заметку."""
-        self.client.logout()
-        response = self.client.post(reverse('notes:add'), {
+        response = self.anonymous_client.post(reverse('notes:add'), {
             'title': 'Anonymous Note',
             'text': 'This should not work',
         })
@@ -43,14 +44,14 @@ class NoteLogicTests(TestCase):
 
     def test_slug_must_be_unique(self):
         """Проверяет, что slug должен быть уникальным при создании заметки."""
-        response = self.client.post(reverse('notes:add'), {
+        response = self.authenticated_client.post(reverse('notes:add'), {
             'title': 'First Note',
             'text': 'This is the first note',
             'slug': 'unique-slug',
         })
         self.assertEqual(response.status_code, 302)
 
-        response = self.client.post(reverse('notes:add'), {
+        response = self.authenticated_client.post(reverse('notes:add'), {
             'title': 'Second Note',
             'text': 'This is the second note',
             'slug': 'unique-slug',
